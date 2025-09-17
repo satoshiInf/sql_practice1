@@ -1,0 +1,82 @@
+CREATE TABLE users 
+(
+    user_id INT PRIMARY KEY,
+    name VARCHAR(50)
+);
+
+INSERT INTO users (user_id, name) VALUES
+(1, 'Alice'),
+(2, 'Bob'),
+(3, 'Charlie');
+
+
+CREATE TABLE orders 
+(
+    order_id INT PRIMARY KEY,
+    user_id INT,
+    price INT,
+    order_date DATE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+INSERT INTO orders (order_id, user_id, price, order_date) VALUES
+(101, 1, 50, '2025-01-05'),
+(102, 1, 70, '2025-02-10'),
+(103, 2, 30, '2025-01-15'),
+(104, 2, 20, '2024-12-30'),
+(105, 3, 200, '2025-03-01');
+
+例題1
+「ユーザーごとの合計金額を出し、合計金額が 100以上のユーザーだけ を表示せよ」
+//補足：合計が存在しない場合は０と記載する。
+
+-- joinした後に取り出す対象を決める
+SELECT 
+u.user_id,
+u.name,
+COALESCE(SUM(o.price), 0) AS totalPrice
+
+FROM 
+users u
+
+-- joinでorderテーブルの左にfrom以下のテーブルをつける
+LEFT JOIN orders o ON u.user_id = o.user_id
+
+-- groupではuser,　nameを書いてその先は要求に応じて
+GROUP BY u.user_id, u.name
+
+-- whereは集計前の条件,　havingは集計後の条件
+HAVING SUM(o.price) >= 100;
+
+
+
+
+
+例題2
+全ユーザーを表示して、注文がない場合も 0 を表示するパターンに進みましょう。
+
+目標
+すべてのユーザーを表示する
+注文があるユーザー → 合計金額を表示
+注文がないユーザー → 0 を表示
+
+SELECT 
+u.user_id,
+u.name,
+COALESCE(SUM(o.price), 0) AS total_price,
+
+
+--COALESCE(COUNT(o.order_id) AS total_order
+--COUNTにおいてはo.order_idがNULLの場合は０として計上される
+
+FROM
+user u
+LEFT JOIN orders o ON u.user_id = o.user_id
+GROUP BY u.user_id , u.name
+ 
+
+
+ 
+
+
+
