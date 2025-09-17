@@ -72,7 +72,7 @@ COALESCE(SUM(o.price), 0) AS total_price,
 FROM
 user u
 LEFT JOIN orders o ON u.user_id = o.user_id
-GROUP BY u.user_id , u.name
+GROUP BY u.user_id , u.name;
  
 
 
