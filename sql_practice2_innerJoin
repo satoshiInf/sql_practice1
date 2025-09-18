@@ -1,0 +1,111 @@
+あなたが「GROUP BY＝座標で1行にまとまる」という理解を得たので、
+次はその応用として HAVING を扱います。
+
+HAVINGとは？
+WHERE は 行に対する条件（集計前にフィルタ）
+HAVING は グループに対する条件（集計後にフィルタ）
+
+例1：部門ごとの従業員数を数える
+SELECT department, COUNT(*) AS staff_count
+FROM employees
+GROUP BY department;
+
+
+👉 部署ごとに人数が出る。
+
+例2：人数が5人以上の部署だけ出す
+SELECT department, COUNT(*) AS staff_count
+FROM employees
+GROUP BY department
+HAVING COUNT(*) >= 5;
+
+
+👉 WHEREではなくHAVINGを使う理由
+COUNT(*) は集計後でないと計算できないから。
+
+
+
+
+
+users テーブル（ユーザー）
+
+| user\_id | name  | city    |
+| -------- | ----- | ------- |
+| 1        | Alice | Tokyo   |
+| 2        | Bob   | Osaka   |
+| 3        | Carol | Nagoya  |
+| 4        | David | Fukuoka |
+
+orders テーブル（注文）
+| order\_id | user\_id | product  | price |
+| --------- | -------- | -------- | ----- |
+| 101       | 1        | Laptop   | 1200  |
+| 102       | 1        | Keyboard | 100   |
+| 103       | 2        | Mouse    | 50    |
+| 104       | 2        | Monitor  | 300   |
+| 105       | 3        | Laptop   | 1100  |
+
+
+SELECT 
+u.user_id,
+u.name,
+AVG(o.price) AS avaragePrice,
+SUM(o.price) AS totalPrice,
+COUNT(o.order_id) AS orderCount
+From users u
+Inner Join orders o on u.user_id = o.user_id 
+GROUP BY u.user_id,u.name
+
+| user\_id | name  | averagePrice | totalPrice | orderCount |
+| -------- | ----- | ------------ | ---------- | ---------- |
+| 1        | Alice | 650.0        | 1300       | 2          |
+| 2        | Bob   | 175.0        | 350        | 2          |
+| 3        | Carol | 1100.0       | 1100       | 1          |
+
+SELECT 
+u.user_id,
+u.name,
+AVG(o.price) AS avaragePrice,
+SUM(o.price) AS totalPrice,
+COUNT(o.order_id) AS orderCount
+From users u
+Left Join orders o on u.user_id = o.user_id 
+GROUP BY u.user_id,u.name
+
+ | user\_id | name  | averagePrice | totalPrice | orderCount |
+| -------- | ----- | ------------ | ---------- | ---------- |
+| 1        | Alice | 650.0        | 1300       | 2          |
+| 2        | Bob   | 175.0        | 350        | 2          |
+| 3        | Carol | 1100.0       | 1100       | 1          |
+| 4        | David | NULL         | NULL       | 0          |
+
+
+SELECT 
+u.user_id,
+u.name,
+AVG(o.price) AS avaragePrice,
+SUM(o.price) AS totalPrice,
+COUNT(o.order_id) AS orderCount
+From users u
+Left Join orders o on u.user_id = o.user_id 
+GROUP BY u.user_id,u.name
+HAVING SUM(o.price) >= 1000;
+
+| user\_id | name  | averagePrice | totalPrice | orderCount |
+| -------- | ----- | ------------ | ---------- | ---------- |
+| 1        | Alice | 650.0        | 1300       | 2          |
+| 3        | Carol | 1100.0       | 1100       | 1          |
+
+
+1. WHERE の場合
+WHERE は 集計する前 のデータに条件をかけます。
+なので集計関数（SUM, AVG など）は書けません。
+
+2. HAVING の場合
+HAVING は 集計した後 の結果に条件をかけます。
+だから SUM(o.price) や AVG(o.price) が書けるわけです。
+3. HAVING で使う列名について
+
+HAVING ではSUM(o.price) のように元の式で書く
+もしくは totalPrice というエイリアスで書く
+どちらも使えるDBが多いです（MySQL, PostgreSQL, SQLite など）。
